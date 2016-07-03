@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1467513820 source:d:\project\test_game\sdl_test\main.c
+	<stdio.h>
+	<SDL.h>
+	<SDL_image.h>
+	<time.h>
+
