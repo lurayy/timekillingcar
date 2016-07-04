@@ -16,6 +16,8 @@ typedef struct
         pos hero;
         pos gunda[3];
         pos collide;
+        float forcedy;
+        float forcedx;
         SDL_Texture *road;
         SDL_Texture *herodaikocar;
         SDL_Window *window ;
@@ -38,11 +40,13 @@ int main (int argc, char *argv[])
         //initalization
         int i;
         gamestate game;
-        game.hero.h=38;
+        game.hero.h=47;
         game.hero.w=47;
         game.hero.y=100;
         game.hero.x=100;
         game.collide.x=0;
+        game.forcedx = 0;
+        game.forcedy=0;
 
         for(i=0;i<3;i++)
         {
@@ -107,6 +111,7 @@ int texture (gamestate *game )
         }
 		game->road = SDL_CreateTextureFromSurface(game->render, background);
 		SDL_FreeSurface (background);
+
 		return 0;
 }
 
@@ -146,22 +151,29 @@ int texture (gamestate *game )
                                 }
                         }
                         const  Uint8 *state = SDL_GetKeyboardState(NULL);
-                        if (state[SDL_SCANCODE_RIGHT])
+                        if (!game->forcedx)
                         {
-                                game->hero.x+=5;
+                                        if (state[SDL_SCANCODE_RIGHT])
+                                {
+                                        game->hero.x+=5;
+                                }
+                                        if (state[SDL_SCANCODE_LEFT])
+                                {
+                                                game->hero.x-=5;
+                                }
                         }
-                                if (state[SDL_SCANCODE_LEFT])
+                        if (!game->forcedy)
                         {
-                                        game->hero.x-=5;
-                        }
-                            if (state[SDL_SCANCODE_UP])
-                        {
-                                game->hero.y-=5;
-                        }
+                                if (state[SDL_SCANCODE_UP])
+                                {
+                                        game->hero.y-=5;
+                                }
                                 if (state[SDL_SCANCODE_DOWN])
-                        {
-                                        game->hero.y+=5;
+                                {
+                                                game->hero.y+=5;
+                                }
                         }
+
                         return(done);
                 }
 
@@ -183,9 +195,8 @@ int renderer(gamestate *game)
                 SDL_Rect herodai  = {game->hero.x,game->hero.y,game->hero.h,game->hero.w};
                 SDL_RenderCopy(game->render, game->herodaikocar , NULL , &herodai );
 
-                //tests
-                             SDL_SetRenderDrawColor(game->render,255,0,0,255) ;
-                                SDL_RenderDrawLine(game->render,54,0,54,500);
+        //test points !
+
                 SDL_RenderPresent(game->render);
                 SDL_Delay(10 );
                 return 0;
@@ -195,19 +206,37 @@ int renderer(gamestate *game)
 //collision
 int collision( gamestate *game)
 {
-        int i ;
-       float  mx=game->hero.x;
-        float my = game->hero.y;
+        float hx= game->hero.x;
+        float hy = game->hero.y;
       float  bl=59;
-       float br=422;
-        for(i=0;i<586;i++)
-        {
-                        if(bl==mx && my==i  )
-                        {
-                                game->hero.x=game->hero.x-5;
-                                        printf("collide");
-                        }
+       float br=420;
+        if(hx <= bl )
+         {
+                 printf("\n Collide left ");
+                game->hero.x=bl++;
+                game->forcedx= 23;
         }
+        if( hx + game->hero.w >= br)
+        {
+                printf("\n Collide right");
+                game->hero.x= game->hero.x-1;
+                game->forcedx= -25;
+        }
+        //collide top
+        if(hy <= 0)
+        {
+                printf( "\n Collide top");
+                game->forcedy= 25;
+                game->hero.y=5;
+        }
+        //collide bot
+        if(hy+game->hero.h >= 586)
+        {
+                game->hero.y = game->hero.y -5;
+                printf("\n Collide bot");
+                game->forcedy= -25;
+        }
+
   return  0;
 }
 
@@ -215,8 +244,39 @@ int collision( gamestate *game)
 //collision move
 int collisionmove(gamestate *game)
 {
-        return 0;
+      float   forcedx = game->forcedx;
+      forcedx = forcedx <1 ?0:forcedx;
+        float   forcedy = game->forcedy;
+      forcedy = forcedy <1 ?0:forcedy;
+
+      //collision left                                        action
+         if (forcedx )
+        {
+                game->hero.x++;
+                game->forcedx--;
+        }
+        //collision right                         action
+        if ( game->forcedx <0)
+        {
+                game->hero.x--;
+                game->forcedx++;
+        }
+
+        //collision up                   action
+         if ( game->forcedy> 0  )
+        {
+                game->hero.y++;
+                game->forcedy--;
+        }
+        //collision down   action
+        if(game->forcedy <0 )
+        {
+                game->hero.y--;
+                game->forcedy++;
+        }
+       return 0;
 }
+
 
 
 
